@@ -21,6 +21,9 @@ class SerialPort {
   Result flashInputBuffer() noexcept;
   Result flashOutputBuffer() noexcept;
 
+  void set_timeout(const std::chrono::milliseconds timeout) noexcept { timeout_ = timeout; }
+  [[nodiscard]] std::chrono::milliseconds timeout() const noexcept { return timeout_; }
+
   Result read_byte(uint8_t* byte) {
     try {
       port_.ReadByte(*byte, static_cast<std::size_t>(timeout_.count()));
@@ -66,6 +69,7 @@ class SerialPort {
  private:
   [[nodiscard]] Result check_port() const noexcept;
   std::string dev_;
+  // Runtime value, sized for SRAM round-trips. EEPROM writes need far more; see ScopedTimeout.
   std::chrono::milliseconds timeout_ = std::chrono::milliseconds(5);
   LibSerial::SerialPort port_;
 };

@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include <experimental/array>
+#include <chrono>
 #include <feetech_driver/serial_port.hpp>
 #include <numeric>
 
@@ -141,6 +142,9 @@ class CommunicationProtocol {
   Result lock_eprom(uint8_t id);
   Result unlock_eprom(uint8_t id);
 
+  void set_timeout(const std::chrono::milliseconds timeout) noexcept { serial_port_->set_timeout(timeout); }
+  [[nodiscard]] std::chrono::milliseconds timeout() const noexcept { return serial_port_->timeout(); }
+
   /// TODO: Should we pass the length and this returns Expected<std::vector<std::vector<uint8_t>>>?
   /// Sync Read
   template <std::size_t N>
@@ -264,5 +268,26 @@ class CommunicationProtocol {
 
     return serial_port_->write(write_buf);
   }
+};
+
+/// Raises the serial read timeout for the lifetime of the object and restores it afterwards.
+/// An STS servo only answers a write to an EEPROM register once its flash program cycle has
+/// finished, which takes far longer than the timeout used for normal SRAM traffic.
+class ScopedTimeout {
+ public:
+  ScopedTimeout(CommunicationProtocol& protocol, const std::chrono::milliseconds timeout)
+      : protocol_(protocol), previous_(protocol.timeout()) {
+    protocol_.set_timeout(timeout);
+  }
+  ~ScopedTimeout() { protocol_.set_timeout(previous_); }
+
+  ScopedTimeout(const ScopedTimeout&) = delete;
+  ScopedTimeout& operator=(const ScopedTimeout&) = delete;
+  ScopedTimeout(ScopedTimeout&&) = delete;
+  ScopedTimeout& operator=(ScopedTimeout&&) = delete;
+
+ private:
+  CommunicationProtocol& protocol_;
+  std::chrono::milliseconds previous_;
 };
 }  // namespace feetech_driver

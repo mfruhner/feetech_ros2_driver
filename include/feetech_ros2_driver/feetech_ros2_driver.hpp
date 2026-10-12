@@ -22,6 +22,15 @@ namespace feetech_ros2_driver {
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
+/// Linear map between raw servo ticks and the joint angle reported to ros2_control.
+struct TickMapping {
+  double tick_at_zero;
+  double radians_per_tick;
+
+  [[nodiscard]] double to_radians(const double ticks) const { return (ticks - tick_at_zero) * radians_per_tick; }
+  [[nodiscard]] double to_ticks(const double radians) const { return radians / radians_per_tick + tick_at_zero; }
+};
+
 class FeetechHardwareInterface : public hardware_interface::SystemInterface {
  public:
 #if HARDWARE_INTERFACE_VERSION_GTE(4, 34, 0)
@@ -50,6 +59,7 @@ class FeetechHardwareInterface : public hardware_interface::SystemInterface {
   std::vector<uint8_t> previous_hw_positions_;
 
   std::vector<uint8_t> joint_ids_;
+  std::vector<TickMapping> tick_mappings_;
 
   CallbackReturn init_transport_();
   CallbackReturn load_yaml_config_and_warn_(JointIdConfigMap& out_yaml);
