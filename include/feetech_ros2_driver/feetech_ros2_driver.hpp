@@ -60,6 +60,9 @@ class FeetechHardwareInterface : public hardware_interface::SystemInterface {
 
   std::vector<uint8_t> joint_ids_;
   std::vector<TickMapping> tick_mappings_;
+  // Sent with every goal position; a sync write of Goal_Position also overwrites these registers.
+  std::vector<int> goal_speeds_;
+  std::vector<int> goal_accelerations_;
 
   CallbackReturn init_transport_();
   CallbackReturn load_yaml_config_and_warn_(JointIdConfigMap& out_yaml);

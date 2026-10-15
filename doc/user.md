@@ -26,7 +26,8 @@ Make sure to look at [Memory table](https://docs.google.com/spreadsheets/d/1GVs7
 * `protection_current` (optional): Protection current threshold.
 * `overload_torque` (optional): Overload torque threshold.
 * `return_delay_time` (optional): Response delay time.
-* `acceleration` (optional): Acceleration value.
+* `acceleration` (optional): Acceleration (0–254, unit 100 steps/s², 0 = unlimited). Written to the servo at startup and sent with every goal position. Defaults to `50` when omitted.
+* `goal_speed` (optional): Maximum speed sent with every goal position (0–32767 steps/s, 0 = unlimited). Defaults to `2400` when omitted. For low-latency teleoperation (LeRobot-like behavior), use `goal_speed: 0` and `acceleration: 254`.
 
 ### Example
 
