@@ -324,6 +324,17 @@ CallbackReturn FeetechHardwareInterface::configure_joints_(const JointIdConfigMa
       return CallbackReturn::ERROR;
     }
 
+    // The servo enforces the RAM Torque_Limit, which it only copies from the EEPROM Max_Torque_Limit at power-on.
+    // Mirror it so a changed max_torque_limit takes effect without power-cycling the servo.
+    if (const auto param_it = merged_params.find("max_torque_limit"); param_it != merged_params.end()) {
+      std::array<uint8_t, 2> buf{};
+      feetech_driver::to_sts(&buf[0], &buf[1], std::stoi(param_it->second));
+      if (const auto result = communication_protocol_->write(joint_ids_[i], SMS_STS_TORQUE_LIMIT_L, buf); !result) {
+        spdlog::error("FeetechHardwareInterface::configure_joints_ torque_limit -> {}", result.error());
+        return CallbackReturn::ERROR;
+      }
+    }
+
     // Only enable torque for joints with command interfaces (Follower Arm)
     if (!joint.command_interfaces.empty()) {
       // Goal_Position still holds the previous session's target; without seeding it the joint

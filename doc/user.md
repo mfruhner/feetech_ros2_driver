@@ -22,7 +22,7 @@ Make sure to look at [Memory table](https://docs.google.com/spreadsheets/d/1GVs7
 * `homing_offset` (optional): Signed offset written to the servo's EEPROM. The servo firmware applies `Present_Position = Actual_Position - Homing_Offset`, so setting `homing_offset = actual_position - 2048` makes the servo report 2048 (center) at your desired physical center. If migrating from the old `offset` parameter: `homing_offset = old_offset - 2048` (since the old offset was effectively the actual position at center).
 * `range_min` (optional): Minimum angle limit (raw ticks, after homing offset is applied).
 * `range_max` (optional): Maximum angle limit (raw ticks, after homing offset is applied).
-* `max_torque_limit` (optional): Maximum torque limit.
+* `max_torque_limit` (optional): Maximum torque limit (0–1000, 0.1 % units). Written to EEPROM and to the live `Torque_Limit` register, so changes apply on the next launch without power-cycling the servo.
 * `protection_current` (optional): Protection current threshold.
 * `overload_torque` (optional): Overload torque threshold.
 * `return_delay_time` (optional): Response delay time.
